@@ -42,7 +42,7 @@ public class Eyezon: NSObject {
     public func openButton(data: EyezonSDKData, interfaceBuilder: EyezonSDKInterfaceBuilder? = nil, broadcastReceiver: EyezonBroadcastReceiver?) -> UIViewController {
         self.broadcastReceiver = broadcastReceiver
         self.clientId = data.buttonId
-        return EyezonAssembly.viewController(with: data, and: interfaceBuilder, and: broadcastReceiver)
+        return EyezonAssembly.viewController(with: data, and: broadcastReceiver)
     }
     
     public func logout(
