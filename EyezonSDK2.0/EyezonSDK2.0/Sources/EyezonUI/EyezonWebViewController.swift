@@ -43,31 +43,11 @@ final class EyezonWebViewController: UIViewController {
         return view
     }()
     
-    let navView = UIView()
-    let seperatorView = UIView()
-    let titleLabel = UILabel()
-    
-    let navBarButton = UIButton(type: .system) as UIButton
-    
     private let widgetUrl: String
     private weak var broadcastReceiver: EyezonBroadcastReceiver?
     override var preferredFocusEnvironments: [UIFocusEnvironment] {
         [eyezonWebView]
     }
-    
-    // custom nav bar
-    private var isCustomNavigationController: Bool
-    
-    private let navBarBackgroundViewColor: UIColor
-    
-    private let navBarTitleLabelText: String
-    private let navBarTitleLabelColor: UIColor
-    
-    private let navBarBackButtonTitleText: String
-    private let navBarBackButtonTitleColor: UIColor
-    private var navBarBackButtonLeftPositionState: Bool
-    
-    private var topInset: CGFloat = 10
     
     // MARK: - Public properties
     var presenter: EyezonWebViewPresenter!
@@ -75,28 +55,9 @@ final class EyezonWebViewController: UIViewController {
     // MARK: - Lifecycle
     init(
         widgetUrl: String,
-        isNavigationController: Bool,
-        navBarBackgroundColor: UIColor,
-        navBarTitleText: String,
-        navBarTitleColor: UIColor,
-        navBarBackButtonText: String,
-        navBarBackButtonColor: UIColor,
-        navBarBackButtonLeftPosition: Bool,
         broadcastReceiver: EyezonBroadcastReceiver?
     ) {
         self.widgetUrl = widgetUrl
-        
-        self.isCustomNavigationController = !isNavigationController
-        
-        self.navBarBackgroundViewColor = navBarBackgroundColor
-        
-        self.navBarTitleLabelText = navBarTitleText
-        self.navBarTitleLabelColor = navBarTitleColor
-        
-        self.navBarBackButtonTitleText = navBarBackButtonText
-        self.navBarBackButtonTitleColor = navBarBackButtonColor
-        self.navBarBackButtonLeftPositionState = navBarBackButtonLeftPosition
-        
         self.broadcastReceiver = broadcastReceiver
         super.init(nibName: nil, bundle: nil)
     }
@@ -118,25 +79,10 @@ final class EyezonWebViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // background color
-        navigationController?.navigationBar.backgroundColor = navBarBackgroundViewColor
-        
-        // title
-        navigationItem.title = navBarTitleLabelText
-        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: navBarTitleLabelColor]
-        
-        // back button
-        let backButton = UIBarButtonItem()
-        backButton.title = navBarBackButtonTitleText
-        backButton.tintColor = navBarBackButtonTitleColor
-        self.navigationController?.navigationBar.topItem?.backBarButtonItem = backButton
-        
-        navigationController?.setNavigationBarHidden(false, animated: true)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: true)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -149,41 +95,6 @@ final class EyezonWebViewController: UIViewController {
     }
     
     func setupInterface() {
-        topInset = modalPresentationStyle == .fullScreen ? 0 : 10
-        if !isCustomNavigationController {
-            navView.backgroundColor = navBarBackgroundViewColor
-            navView.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(navView)
-            
-            titleLabel.text = navBarTitleLabelText
-            titleLabel.font = UIFont.boldSystemFont(ofSize: 17)
-            titleLabel.textColor = navBarTitleLabelColor
-            titleLabel.textAlignment = .center
-            titleLabel.translatesAutoresizingMaskIntoConstraints = false
-            
-            navView.addSubview(titleLabel)
-            
-            navBarButton.setTitle(navBarBackButtonTitleText, for: .normal)
-            navBarButton.setTitleColor(navBarBackButtonTitleColor, for: .normal)
-            navBarButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 17)
-            navBarButton.translatesAutoresizingMaskIntoConstraints = false
-            navBarButton.addTarget(self, action: #selector(closeAction), for: .touchUpInside)
-            navBarButton.titleLabel?.adjustsFontSizeToFitWidth = true
-            
-            if navBarBackButtonTitleText == "" {
-                navBarButton.isHidden = true
-            } else {
-                navBarButton.isHidden = false
-            }
-            
-            navView.addSubview(navBarButton)
-            
-            seperatorView.backgroundColor = .gray.withAlphaComponent(0.15)
-            seperatorView.translatesAutoresizingMaskIntoConstraints = false
-            
-            navView.addSubview(seperatorView)
-        }
-        
         view.backgroundColor = .white
         makeWebView()
         view.addSubview(eyezonWebView)
@@ -196,90 +107,24 @@ final class EyezonWebViewController: UIViewController {
     
     // MARK: - Private methods
     private func constraintView() {
-        if !isCustomNavigationController {
-            let navBarConstraints = [
-                navView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: topInset),
-                navView.bottomAnchor.constraint(equalTo: eyezonWebView.topAnchor),
-                navView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                navView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                navView.heightAnchor.constraint(equalToConstant: 44)
-            ]
-            NSLayoutConstraint.activate(navBarConstraints)
+        let webViewNCConstraints = [
+            eyezonWebView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            eyezonWebView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            eyezonWebView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            eyezonWebView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ]
+        NSLayoutConstraint.activate(webViewNCConstraints)
+        
+        let loadingViewNCConstraints = [
+            loadingView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            loadingView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            loadingView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loadingView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
-            let titleLabelConstraints = [
-                titleLabel.topAnchor.constraint(equalTo: navView.topAnchor),
-                titleLabel.leadingAnchor.constraint(equalTo: navView.leadingAnchor),
-                titleLabel.trailingAnchor.constraint(equalTo: navView.trailingAnchor),
-                titleLabel.bottomAnchor.constraint(equalTo: navView.bottomAnchor)
-            ]
-            NSLayoutConstraint.activate(titleLabelConstraints)
-            
-            let seperatorViewConstraints = [
-                seperatorView.leadingAnchor.constraint(equalTo: navView.leadingAnchor),
-                seperatorView.trailingAnchor.constraint(equalTo: navView.trailingAnchor),
-                seperatorView.bottomAnchor.constraint(equalTo: navView.bottomAnchor),
-                seperatorView.heightAnchor.constraint(equalToConstant: 1)
-            ]
-            NSLayoutConstraint.activate(seperatorViewConstraints)
-            
-            let leftNavBarButtonConstraints = [
-                navBarButton.leadingAnchor.constraint(equalTo: navView.leadingAnchor, constant: 9),
-                navBarButton.topAnchor.constraint(equalTo: navView.topAnchor),
-                navBarButton.bottomAnchor.constraint(equalTo: navView.bottomAnchor),
-                navBarButton.widthAnchor.constraint(lessThanOrEqualToConstant: 90)
-            ]
-            
-            let rightNavBarButtonConstraints = [
-                navBarButton.trailingAnchor.constraint(equalTo: navView.trailingAnchor, constant: -9),
-                navBarButton.topAnchor.constraint(equalTo: navView.topAnchor),
-                navBarButton.bottomAnchor.constraint(equalTo: navView.bottomAnchor),
-                navBarButton.widthAnchor.constraint(lessThanOrEqualToConstant: 90)
-            ]
-            
-            if navBarBackButtonLeftPositionState {
-                NSLayoutConstraint.activate(leftNavBarButtonConstraints)
-            } else {
-                NSLayoutConstraint.activate(rightNavBarButtonConstraints)
-            }
-            
-            let webViewConstraints = [
-                eyezonWebView.topAnchor.constraint(equalTo: navView.bottomAnchor),
-                eyezonWebView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                eyezonWebView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                eyezonWebView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-            ]
-            NSLayoutConstraint.activate(webViewConstraints)
-            
-            let loadingViewConstraints = [
-                loadingView.topAnchor.constraint(equalTo: navView.bottomAnchor),
-                loadingView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                loadingView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                loadingView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-
-                loaderView.centerYAnchor.constraint(equalTo: loadingView.centerYAnchor),
-                loaderView.centerXAnchor.constraint(equalTo: loadingView.centerXAnchor)
-            ]
-            NSLayoutConstraint.activate(loadingViewConstraints)
-        } else {
-            let webViewNCConstraints = [
-                eyezonWebView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                eyezonWebView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                eyezonWebView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                eyezonWebView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-            ]
-            NSLayoutConstraint.activate(webViewNCConstraints)
-            
-            let loadingViewNCConstraints = [
-                loadingView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                loadingView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                loadingView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                loadingView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-
-                loaderView.centerYAnchor.constraint(equalTo: loadingView.centerYAnchor),
-                loaderView.centerXAnchor.constraint(equalTo: loadingView.centerXAnchor)
-            ]
-            NSLayoutConstraint.activate(loadingViewNCConstraints)
-        }
+            loaderView.centerYAnchor.constraint(equalTo: loadingView.centerYAnchor),
+            loaderView.centerXAnchor.constraint(equalTo: loadingView.centerXAnchor)
+        ]
+        NSLayoutConstraint.activate(loadingViewNCConstraints)
     }
     
     private func makeWebView() {
@@ -386,6 +231,6 @@ extension EyezonWebViewController: EyezonWebViewProtocol {
     }
     
     func didEnterBackground() {
-        eyezonWebView.evaluateJavaScript(EyezonJSConstants.leaveDialog)
+        eyezonWebView.evaluateJavaScript(EyezonJSConstants.leaveSession)
     }
 }

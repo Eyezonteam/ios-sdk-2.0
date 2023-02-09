@@ -8,7 +8,7 @@
 import Foundation
 
 enum EyezonJSConstants {
-    static let leaveDialog = "javascript:eyeZon('leaveDialog')"
+    static let leaveSession = "javascript:eyeZon('leaveSession')"
     
     /// For listening console events
     static let listeningConsoleEvents = "function captureLog(msg) { window.webkit.messageHandlers.logHandler.postMessage(msg); } window.console.log = captureLog;"
